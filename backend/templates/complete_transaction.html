@@ -7,12 +7,12 @@
     <p>Order ID: {{order_details['order_id']}}</p>
     <p>Transaction total: <strong>{{order_details['order_total']}}</strong> UGX</p>
 </div>
-<div><p id="home-redirect">You will be redirected to the home page in 5 seconds.</p></div>
+<div><p id="home-redirect">You will be redirected to the home page in 10 seconds.</p></div>
 {% endblock content %}
 {% block scripts %}
 <script>
     setTimeout(() => {
         window.location.href = "/";
-    }, 5000);
+    }, 9000);
 </script>
 {% endblock scripts %}

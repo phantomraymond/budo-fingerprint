@@ -80,15 +80,18 @@ def arduino(order_total):
     finger_id = res.json()["id"]
     result = False
     error = ""
-    if (finger_id in data["users"]) :
-        #check balance
-        balance = data["users"][finger_id]["balance"]
-        print(balance)
-        if (balance >= order_total):
-            new_balance = balance - order_total
-            result = True
+    if (current_student in data["users"]) :
+        if current_student==finger_id :
+            #check balance
+            balance = data["users"][finger_id]["balance"]
+            print(balance)
+            if (balance >= order_total):
+                new_balance = balance - order_total
+                result = True
+            else:
+                error = "Balance too low"
         else:
-            error = "Balance too low"
+            error = "False identity"
     else:
         error = "Invalid user ID"
     return {"valid" : result, "error": error}
