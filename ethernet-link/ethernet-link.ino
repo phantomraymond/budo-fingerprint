@@ -1,4 +1,4 @@
-#include <SPI.h>
+
 #include <Ethernet.h>
 #include <Adafruit_Fingerprint.h>
 
