@@ -5,7 +5,7 @@ import json
 import random
 
 # ARDUINO_URL = "http://192.168.16.156"
-ARDUINO_URL = "http://192.168.1.7:5000"
+ARDUINO_URL = "http://10.32.36.33"
 db_file = (Path(__file__).parent/"db.json")
 
 app = Flask(__name__)

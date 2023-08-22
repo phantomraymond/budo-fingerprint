@@ -10,9 +10,10 @@ Adafruit_Fingerprint finger(&mySerial);
 
 void setup()
 {
-  server.begin();
+ 
   Serial.begin(115200);
   Serial.println("----------------------------------------------------------------");
+   server.begin();
   Ethernet.begin(mac);
 
   Serial.println(Ethernet.localIP());

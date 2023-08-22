@@ -45,6 +45,13 @@ border-radius: 9px;
 box-sizing: border-box;
 
 }
+/* columns for options */
+.item-1{
+    column-count: 3; /* Number of columns */
+    column-gap: 20px; /* Gap between columns */
+    max-width: 300px; /* Adjust the container width as needed */
+  }
+
 /* Styling for the submit button */
 button{
 width: 100%;
@@ -81,6 +88,13 @@ background-color: #2f5e31;
           <option value="Samosa" data-price="500">Samosa</option>
           <option value="Chapati" data-price="500">Chapati</option>
           <option value="Soda" data-price="1000">Soda</option>
+          <option value="Eggroll" data-price="1500">Eggroll</option>
+          <option value="Water" data-price="1000">Water</option>
+          <option value="Juice" data-price="5000">Juice</option>
+          <option value="Yoghurt" data-price="7000">Yoghurt</option>
+          <option value="Toblerone" data-price="10000">Toblerone</option>
+          
+
           <!-- Add more options as needed -->
         </select>
         <label for="quantity1">Quantity:</label>
