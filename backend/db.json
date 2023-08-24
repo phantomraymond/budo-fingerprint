@@ -1,1 +1,17 @@
-{"users": {"1": {"name": "Calvin Rwakibale", "balance": 20000}, "2": {"name": "Kaitesi Angel", "balance": 200000}, "3": {"name": "Ashaba Raymond", "balance": 4900}, "4": {"name": "Mulindwa Jamal-Deen", "balance": 3000}, "5": {"name": "Geno Jonathan", "balance": 100000}, "6": {"name": "Kuulo Shalom Cyrus", "balance": 100000}}, "current_student_id": "1", "last_order_id": "ORDER-9553", "last_order_total": 1500}
+{
+  "users": {
+    "1": { "name": "Calvin Rwakibale", "balance": 20000 },
+    "2": { "name": "Kaitesi Angel", "balance": 200000 },
+    "3": { "name": "Ashaba Raymond", "balance": 4900 },
+    "4": { "name": "Mulindwa Jamal-Deen", "balance": 3000 },
+    "5": { "name": "Geno Jonathan", "balance": 100000 },
+    "6": { "name": "Kuulo Shalom Cyrus", "balance": 100000 },
+    "13": { "name": "Bob Lubowa", "balance": 10000 },
+    "14": { "name": "Ssemitala Humphrey", "balance": 50000 },
+    "15": { "name": "Kalungi Joel", "balance": 10000 },
+    "16": { "name": "Kasozi Ronald", "balance": 10000 }
+  },
+  "current_student_id": "14",
+  "last_order_id": "ORDER-7282",
+  "last_order_total": 1000
+}
