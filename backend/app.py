@@ -3,10 +3,74 @@ import requests
 from pathlib import Path
 import json
 import random
+#start
+
+import mysql.connector
+import json
+
+# Database connection configuration
+config = {
+    "host": "localhost",
+    "user": "root",
+    "password": "",
+    "database": "bio"
+}
+
+try:
+    # Establish a MySQL database connection
+    conn = mysql.connector.connect(**config)
+
+    if conn.is_connected():
+        print("Connected to MySQL database")
+
+    # Create a cursor to execute SQL queries
+    cursor = conn.cursor()
+
+    # Execute your SQL query to fetch data (replace with your actual query)
+    cursor.execute("SELECT * FROM trans")
+    data = cursor.fetchall()
+
+    # Define a dictionary to store user data
+    users = {}
+
+    # Iterate through the fetched data and create user objects
+    for row in data:
+        user_id = row[0]
+        user_data = {
+            "name": row[1],
+            "balance": row[2]
+        }
+        users[user_id] = user_data
+
+    # Create a dictionary to store the "users" key with the user data
+    output_data = {"users": users}
+
+    # Define the output JSON file path
+    json_file_path = "db.json"
+
+    # Write the data to a JSON file
+    with open(json_file_path, "w") as json_file:
+        json.dump(output_data, json_file, indent=4)
+
+    print(f"Data saved to {json_file_path}")
+
+except mysql.connector.Error as err:
+    print(f"Error: {err}")
+
+finally:
+    if conn.is_connected():
+        cursor.close()
+        conn.close()
+        print("MySQL connection is closed")
+
+
+
+# stop
 
 # ARDUINO_URL = "http://192.168.16.156"
-ARDUINO_URL = "http://10.32.51.86"
+ARDUINO_URL = "http://localhost:8000"
 db_file = (Path(__file__).parent/"db.json")
+# db_file = (Path(__file__).parent/"data.py")
 
 app = Flask(__name__)
 
