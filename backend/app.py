@@ -6,6 +6,8 @@ import random
 import mysql.connector
 import uuid  # Import UUID for generating unique order IDs
 
+# ... (previous code)
+
 # Database connection configuration
 config = {
     "host": "localhost",
@@ -102,40 +104,44 @@ def login():
 def db():
     return get_db()
 
-@app.route("/verification/<int:total>/<user_id>")
-def verification(total, user_id):
+@app.route("/verification/<int:total>/<user_id>/<order_id>")
+def verification(total, user_id, order_id):
     data = get_db()
 
-    # Generate a unique order ID using UUID
-    order_id = str(uuid.uuid4())
+    # Check if the user_id is valid
+    if user_id in data["users"]:
+        user_name = data["users"][user_id]["name"]
+        
+        # Save the order ID and its details in the database
+        try:
+            conn = mysql.connector.connect(**config)
+            cursor = conn.cursor()
 
-    data["current_student_id"] = user_id
-    user_name = data["users"][user_id]["name"]
-    order_data = {"name": user_name, "order_id": order_id, "order_total": total}
+            insert_query = "INSERT INTO orders (user_id, order_id, order_total) VALUES (%s, %s, %s)"
+            cursor.execute(insert_query, (user_id, order_id, total))
+            conn.commit()
 
-    # Save the order ID and its details in the database
-    try:
-        conn = mysql.connector.connect(**config)
-        cursor = conn.cursor()
+        except mysql.connector.Error as err:
+            print(f"Database Error: {err}")
 
-        insert_query = "INSERT INTO orders (user_id, order_id, order_total) VALUES (%s, %s, %s)"
-        cursor.execute(insert_query, (user_id, order_id, total))
-        conn.commit()
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
 
-    except mysql.connector.Error as err:
-        print(f"Database Error: {err}")
+        # Update the database with the last order ID and order total
+        data["last_order_id"] = order_id
+        data["last_order_total"] = total
+        write_db(data)
 
-    finally:
-        if conn.is_connected():
-            cursor.close()
-            conn.close()
+        order_data = {"name": user_name, "order_id": order_id, "order_total": total}
+        return render_template("verification.html", order_data=order_data)
+    else:
+        error_message = "Invalid user ID"
+        return render_template("verification.html", error=error_message)
 
-    # Update the database with the last order ID and order total
-    data["last_order_id"] = order_id
-    data["last_order_total"] = total
-    write_db(data)
-
-    return render_template("verification.html", order_data=order_data)
+# ... (remaining code)
+# ... (previous code)
 
 @app.route("/complete_transaction")
 def complete_transaction():
@@ -151,14 +157,14 @@ def complete_transaction():
 def arduino(order_total):
     data = get_db()
     current_student = data["current_student_id"]
-    print("hello")
-    print(data)
-    # ask arduino for id
+    
+    # ask Arduino for id
     res = requests.get(ARDUINO_URL)
     print(res)
     finger_id = res.json()["id"]
     result = False
     error = ""
+    
     if current_student in data["users"]:
         if current_student == finger_id:
             # check balance
@@ -173,6 +179,7 @@ def arduino(order_total):
             error = "False identity"
     else:
         error = "Invalid user ID"
+    
     return {"valid": result, "error": error}
 
 if __name__ == "__main__":
