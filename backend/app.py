@@ -3,10 +3,8 @@ import requests
 from pathlib import Path
 import json
 import random
-#start
-
 import mysql.connector
-import json
+import uuid  # Import UUID for generating unique order IDs
 
 # Database connection configuration
 config = {
@@ -63,13 +61,9 @@ finally:
         conn.close()
         print("MySQL connection is closed")
 
-
-
-# stop
-
 # ARDUINO_URL = "http://192.168.16.156"
 ARDUINO_URL = "http://localhost:8000"
-db_file = (Path(__file__).parent/"db.json")
+db_file = (Path(__file__).parent / "db.json")
 # db_file = (Path(__file__).parent/"data.py")
 
 app = Flask(__name__)
@@ -108,28 +102,49 @@ def login():
 def db():
     return get_db()
 
-@app.route("/verification/<int:total>/<user_id>/<order_id>")
-def verification(total, user_id, order_id):
+@app.route("/verification/<int:total>/<user_id>")
+def verification(total, user_id):
     data = get_db()
-    data["current_student_id"] = user_id
-    # new_order_id = str(int(data["last_order_id"]) + 1).zfill(4)
-    # print(data)
-    user_name = data["users"][user_id]["name"]
-    order_data = { "name" : user_name, "order_id" : order_id, "order_total": total}
 
-    # NOTE: You could save the order ID and it's details in the database
+    # Generate a unique order ID using UUID
+    order_id = str(uuid.uuid4())
+
+    data["current_student_id"] = user_id
+    user_name = data["users"][user_id]["name"]
+    order_data = {"name": user_name, "order_id": order_id, "order_total": total}
+
+    # Save the order ID and its details in the database
+    try:
+        conn = mysql.connector.connect(**config)
+        cursor = conn.cursor()
+
+        insert_query = "INSERT INTO orders (user_id, order_id, order_total) VALUES (%s, %s, %s)"
+        cursor.execute(insert_query, (user_id, order_id, total))
+        conn.commit()
+
+    except mysql.connector.Error as err:
+        print(f"Database Error: {err}")
+
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+    # Update the database with the last order ID and order total
     data["last_order_id"] = order_id
     data["last_order_total"] = total
     write_db(data)
+
     return render_template("verification.html", order_data=order_data)
 
 @app.route("/complete_transaction")
 def complete_transaction():
     data = get_db()
     order_details = {"order_id": data["last_order_id"],
-                     "order_total" : data["last_order_total"],
-                     "student" : data["users"][data["current_student_id"]]["name"]
-                     } 
+                     "order_total": data["last_order_total"],
+                     "student": data["users"][data["current_student_id"]]["name"]
+                     }
+
     return render_template("complete_transaction.html", order_details=order_details)
 
 @app.route("/arduino/<int:order_total>")
@@ -144,12 +159,12 @@ def arduino(order_total):
     finger_id = res.json()["id"]
     result = False
     error = ""
-    if (current_student in data["users"]) :
-        if current_student==finger_id :
-            #check balance
+    if current_student in data["users"]:
+        if current_student == finger_id:
+            # check balance
             balance = data["users"][finger_id]["balance"]
             print(balance)
-            if (balance >= order_total):
+            if balance >= order_total:
                 new_balance = balance - order_total
                 result = True
             else:
@@ -158,7 +173,7 @@ def arduino(order_total):
             error = "False identity"
     else:
         error = "Invalid user ID"
-    return {"valid" : result, "error": error}
+    return {"valid": result, "error": error}
 
 if __name__ == "__main__":
     app.run(debug=True)
