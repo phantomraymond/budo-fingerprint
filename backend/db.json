@@ -1,1 +1,22 @@
-{"users": {"1": {"name": "fred", "balance": 20000}, "2": {"name": "ashaba", "balance": 50000}, "3": {"name": "geno", "balance": 70000}, "4": {"name": "jamal", "balance": 30000}}, "last_order_id": "ORDER-2857", "last_order_total": 2500}
+{
+    "users": {
+        "1": {
+            "name": "fred",
+            "total_deposit": 0,
+            "total_order": 1500.0,
+            "balance": -1500.0
+        },
+        "2": {
+            "name": "ashaba",
+            "total_deposit": 100000.0,
+            "total_order": 2000.0,
+            "balance": 98000.0
+        },
+        "3": {
+            "name": "Geno",
+            "total_deposit": 150000.0,
+            "total_order": 35001.0,
+            "balance": 114999.0
+        }
+    }
+}

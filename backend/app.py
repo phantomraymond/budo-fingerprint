@@ -2,11 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for
 import requests
 from pathlib import Path
 import json
-import random
 import mysql.connector
-import uuid  # Import UUID for generating unique order IDs
-
-# ... (previous code)
+import uuid
 
 # Database connection configuration
 config = {
@@ -26,49 +23,61 @@ try:
     # Create a cursor to execute SQL queries
     cursor = conn.cursor()
 
-    # Execute your SQL query to fetch data (replace with your actual query)
-    cursor.execute("SELECT * FROM trans")
-    data = cursor.fetchall()
-
-    # Define a dictionary to store user data
+    # Fetch student data and create a dictionary
+    cursor.execute("SELECT student_id, student_name FROM student")
     users = {}
-
-    # Iterate through the fetched data and create user objects
-    for row in data:
-        user_id = row[0]
-        user_data = {
-            "name": row[1],
-            "balance": row[2]
+    for student_id, student_name in cursor.fetchall():
+        users[student_id] = {
+            "name": student_name,
+            "total_deposit": 0,  # Initialize total_deposit to 0 for each user
+            "total_order": 0,    # Initialize total_order to 0 for each user
+            "balance": 0      # Initialize difference to 0 for each user
         }
-        users[user_id] = user_data
 
-    # Create a dictionary to store the "users" key with the user data
-    output_data = {"users": users}
+    # Fetch deposit data and calculate total_deposit per user
+    cursor.execute("SELECT student_id, SUM(amount) FROM deposit GROUP BY student_id")
+    for student_id, total_deposit in cursor.fetchall():
+        if student_id in users:
+            users[student_id]["total_deposit"] = total_deposit
 
-    # Define the output JSON file path
-    json_file_path = "db.json"
+    # Fetch order data and calculate total_order per user
+    cursor.execute("SELECT student_id, SUM(order_total) FROM `order` GROUP BY student_id")
+    for student_id, total_order in cursor.fetchall():
+        if student_id in users:
+            users[student_id]["total_order"] = total_order
 
-    # Write the data to a JSON file
-    with open(json_file_path, "w") as json_file:
-        json.dump(output_data, json_file, indent=4)
+    # Calculate the difference for each user
+    for student_id, data in users.items():
+        data["balance"] = data["total_deposit"] - data["total_order"]
 
-    print(f"Data saved to {json_file_path}")
+    # Create a dictionary to hold the results
+    result = {
+        "users": users
+    }
+
+    # Write the results to a JSON file named db.json
+    with open("db.json", "w") as json_file:
+        json.dump(result, json_file, indent=4)
 
 except mysql.connector.Error as err:
     print(f"Error: {err}")
 
 finally:
     if conn.is_connected():
-        cursor.close()
         conn.close()
         print("MySQL connection is closed")
 
 # ARDUINO_URL = "http://192.168.16.156"
 ARDUINO_URL = "http://localhost:8000"
 db_file = (Path(__file__).parent / "db.json")
-# db_file = (Path(__file__).parent/"data.py")
 
 app = Flask(__name__)
+
+# Rest of the code remains the same...
+
+
+# Rest of the code remains the same...
+
 
 def get_db():
     data = db_file.read_text()
@@ -104,21 +113,21 @@ def login():
 def db():
     return get_db()
 
-@app.route("/verification/<int:total>/<user_id>/<order_id>")
-def verification(total, user_id, order_id):
+@app.route("/verification/<int:total>/<student_id>/<order_id>")
+def verification(total, student_id, order_id):
     data = get_db()
 
-    # Check if the user_id is valid
-    if user_id in data["users"]:
-        user_name = data["users"][user_id]["name"]
+    # Check if the student_id is valid
+    if student_id in data["users"]:
+        user_name = data["users"][student_id]["name"]
         
         # Save the order ID and its details in the database
         try:
             conn = mysql.connector.connect(**config)
             cursor = conn.cursor()
 
-            insert_query = "INSERT INTO orders (user_id, order_id, order_total) VALUES (%s, %s, %s)"
-            cursor.execute(insert_query, (user_id, order_id, total))
+            insert_query = "INSERT INTO `order` (student_id, order_id, order_total) VALUES (%s, %s, %s)"
+            cursor.execute(insert_query, (student_id, order_id, total))
             conn.commit()
 
         except mysql.connector.Error as err:
@@ -137,7 +146,7 @@ def verification(total, user_id, order_id):
         order_data = {"name": user_name, "order_id": order_id, "order_total": total}
         return render_template("verification.html", order_data=order_data)
     else:
-        error_message = "Invalid user ID"
+        error_message = "Invalid student ID"
         return render_template("verification.html", error=error_message)
 
 # ... (remaining code)
@@ -165,10 +174,10 @@ def arduino(order_total):
     result = False
     error = ""
     
-    if current_student in data["users"]:
+    if current_student in data["student"]:
         if current_student == finger_id:
             # check balance
-            balance = data["users"][finger_id]["balance"]
+            balance = data["student"][finger_id]["balance"]
             print(balance)
             if balance >= order_total:
                 new_balance = balance - order_total
@@ -178,7 +187,7 @@ def arduino(order_total):
         else:
             error = "False identity"
     else:
-        error = "Invalid user ID"
+        error = "Invalid student ID"
     
     return {"valid": result, "error": error}
 

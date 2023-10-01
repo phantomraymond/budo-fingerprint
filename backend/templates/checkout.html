@@ -2,7 +2,6 @@
 {% block title %}Checkout Page{% endblock title %}
 
 {% block content %}
-
     <h1 style="text-align: center; margin-top: 2%;">Checkout</h1>
     <div id="cart">
         <h2>Selected Items:</h2>
@@ -12,9 +11,9 @@
         <p class="final-price">Total Price: <span id="total-price">UGX 0.00</span></p>
         <div id="confirm-form">
             <form id="confirm-order-form">
-                <input type="text" id="user-id" placeholder="Enter User ID" required ><br>
-                <button type="submit">Confirm</button>
-              </form>
+            <input type="text" id="user-id" placeholder="Enter User ID" required><br>
+            <button type="submit">Confirm</button>
+        </form>
               <p style="margin-top:3% ;">Your Order ID: <span id="order-id"></span></p>
               
               
@@ -22,10 +21,10 @@
     </div>
     {% endblock content %}
 
-    {% block scripts %}
-    <script>
-        // Function to extract and display selected items from the URL parameters
-        var orderTotal = 0
+{% block scripts %}
+<script>
+    // Function to extract and display selected items from the URL parameters
+    var orderTotal = 0
 
         function displaySelectedItems() {
             const selectedItemsList = document.getElementById("selected-items-list");
@@ -111,9 +110,18 @@
                 });
         });
     
-        // Generate a random order ID
-        function generateOrderID() {
-            return "ORDER-" + Math.floor(Math.random() * 10000);
-        }
-    </script>
+    // Original function to perform the redirection
+    function redirectToVerification(orderTotal, userId, orderID) {
+        // Construct the URL for the verification page
+        const verificationURL = `/verification/${orderTotal}/${userId}/${orderID}`;
+
+        // Redirect to the verification page
+        window.location.href = verificationURL;
+    }
+
+    // Generate a random order ID
+    function generateOrderID() {
+        return "ORDER-" + Math.floor(Math.random() * 10000);
+    }
+</script>
 {% endblock scripts %}
