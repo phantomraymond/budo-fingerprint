@@ -73,12 +73,6 @@ db_file = (Path(__file__).parent / "db.json")
 
 app = Flask(__name__)
 
-# Rest of the code remains the same...
-
-
-# Rest of the code remains the same...
-
-
 def get_db():
     data = db_file.read_text()
     f = json.loads(data)
@@ -141,6 +135,8 @@ def verification(total, student_id, order_id):
         # Update the database with the last order ID and order total
         data["last_order_id"] = order_id
         data["last_order_total"] = total
+        data["current_student_id"]= student_id
+    
         write_db(data)
 
         order_data = {"name": user_name, "order_id": order_id, "order_total": total}
@@ -174,10 +170,10 @@ def arduino(order_total):
     result = False
     error = ""
     
-    if current_student in data["student"]:
+    if current_student in data["users"]:
         if current_student == finger_id:
             # check balance
-            balance = data["student"][finger_id]["balance"]
+            balance = data["users"][finger_id]["balance"]
             print(balance)
             if balance >= order_total:
                 new_balance = balance - order_total
