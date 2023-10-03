@@ -1,3 +1,4 @@
+from typing import ItemsView
 from flask import Flask, render_template, request, redirect, url_for
 import requests
 from pathlib import Path
@@ -119,9 +120,10 @@ def verification(total, student_id, order_id):
         try:
             conn = mysql.connector.connect(**config)
             cursor = conn.cursor()
+            item_name="Samosa"
 
-            insert_query = "INSERT INTO `order` (student_id, order_id, order_total) VALUES (%s, %s, %s)"
-            cursor.execute(insert_query, (student_id, order_id, total))
+            insert_query = "INSERT INTO `order` (student_id, order_id, order_total,item_id) VALUES ( %s, %s, %s,%s)"
+            cursor.execute(insert_query, (student_id, order_id, total, item_name))
             conn.commit()
 
         except mysql.connector.Error as err:
@@ -131,15 +133,18 @@ def verification(total, student_id, order_id):
             if conn.is_connected():
                 cursor.close()
                 conn.close()
+               
 
         # Update the database with the last order ID and order total
         data["last_order_id"] = order_id
         data["last_order_total"] = total
         data["current_student_id"]= student_id
+        data["item_name"]= item_name
+
     
         write_db(data)
 
-        order_data = {"name": user_name, "order_id": order_id, "order_total": total}
+        order_data = {"name": user_name, "order_id": order_id, "order_total": total }
         return render_template("verification.html", order_data=order_data)
     else:
         error_message = "Invalid student ID"
@@ -153,7 +158,8 @@ def complete_transaction():
     data = get_db()
     order_details = {"order_id": data["last_order_id"],
                      "order_total": data["last_order_total"],
-                     "student": data["users"][data["current_student_id"]]["name"]
+                     "student": data["users"][data["current_student_id"]]["name"],
+                     "item_name":data["item_name"]
                      }
 
     return render_template("complete_transaction.html", order_details=order_details)

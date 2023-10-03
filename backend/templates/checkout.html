@@ -76,6 +76,13 @@
                 return quantity * pricePerItem;
             }
             return 0; // Default to 0 if price is not defined
+       
+        const items_id = item_name[item]; // Get price from item_name object
+            if (items_id !== undefined) {
+               return items_id;
+            }
+            return 0; // Default to 0 if price is not defined
+        
         }
     
         // Call the function when the page loads
@@ -85,7 +92,7 @@
         document.getElementById("confirm-order-form").addEventListener("submit", function(event) {
             event.preventDefault();
             const userId = document.getElementById("user-id").value;
-    
+        //
             // Fetch user data from JSON file
             fetch("/db")
                 .then(response => response.json())
